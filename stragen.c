@@ -44,11 +44,12 @@ int main(void)
     t_nodos *nodos = NULL;
     t_conexoes *conexoes = NULL;
 
-    inicializa(&nodos, &conexoes);
 
     entrada(b);
 
     normaliza_entrada(b, w);
+    
+    inicializa(&nodos, &conexoes);
     /* ate aqui os numeros estao normalizados*/
     
     /* Wi = [wi1 ... wiD]; 1<=i<=L
@@ -112,11 +113,15 @@ void imprime(t_nodos *nodos, t_conexoes *conexoes)
 
 void inicializa(t_nodos **nodos, t_conexoes **conexoes)
 {
-    int i;
-    for(i=0; i<2; i++)
-        insere_nodo(nodos, i);
+    int i, j;
+    
+    i = rand()%600;
+    j = rand()%600;
 
-    insere_conexao(conexoes, 0, 1);
+    insere_nodo(nodos, i);
+    insere_nodo(nodos, j);
+
+    insere_conexao(conexoes, i, j);
 
     return;
 }
