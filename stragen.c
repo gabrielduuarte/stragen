@@ -12,6 +12,18 @@
     #define DEBUG 0
 #endif
 
+typedef struct c_nodos
+{
+    short n;
+    struct c_nodos *prox;
+} t_nodos;
+
+typedef struct c_conexoes
+{
+    short n1, n2;
+    struct c_conexoes *prox;
+} t_conexoes;
+
 /*prototipos*/
 void entrada(float b[LIN][DIM]);
 void normaliza_entrada(float b[LIN][DIM], float w[LIN][DIM]);
@@ -28,7 +40,7 @@ int main(void)
     entrada(b);
 
     normaliza_entrada(b, w);
-    /*ate aqui os numeros estao normalizados*/
+    /* ate aqui os numeros estao normalizados*/
     
     /* Wi = [wi1 ... wiD]; 1<=i<=L
      * Wi = [X1 Y1 X2 Y2 Ang1 Ang2]
@@ -38,6 +50,9 @@ int main(void)
      * Dividir o vetor W em 2 grupos homogenos v1, v2*/
     grupos_homogeneos(w, v1, v2);
 
+    /* Selecionar o criterio de vizinhanca:
+     * - Distancia euclidiana entre as posicoes Vn = v1 
+     */
 
 
     return EXIT_SUCCESS;
