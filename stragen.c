@@ -14,13 +14,13 @@
 
 typedef struct c_nodos
 {
-    short n;
+    int n;
     struct c_nodos *prox;
 } t_nodos;
 
 typedef struct c_conexoes
 {
-    short n1, n2;
+    int n1, n2;
     struct c_conexoes *prox;
 } t_conexoes;
 
@@ -29,6 +29,11 @@ void entrada(float b[LIN][DIM]);
 void normaliza_entrada(float b[LIN][DIM], float w[LIN][DIM]);
 float minmax(float b[LIN][DIM], int j, char vez);
 void grupos_homogeneos(float w[LIN][DIM], float v1[LIN][4], float v2[LIN][2]);
+void inicializa(t_nodos **nodos, t_conexoes **conexoes);
+void insere_conexao(t_conexoes **conexoes, int x, int y);
+void insere_nodo(t_nodos **nodos, int x);
+void imprime(t_nodos *nodos, t_conexoes *conexoes);
+void libera(t_nodos **nodos, t_conexoes **conexoes);
 
 /*************/
 
@@ -36,6 +41,10 @@ int main(void)
 {
     float b[LIN][DIM]={}, w[LIN][DIM]={};
     float v1[LIN][4], v2[LIN][2];
+    t_nodos *nodos = NULL;
+    t_conexoes *conexoes = NULL;
+
+    inicializa(&nodos, &conexoes);
 
     entrada(b);
 
@@ -53,9 +62,108 @@ int main(void)
     /* Selecionar o criterio de vizinhanca:
      * - Distancia euclidiana entre as posicoes Vn = v1 
      */
+    if(DEBUG) imprime(nodos, conexoes);
+    libera(&nodos, &conexoes);
 
 
     return EXIT_SUCCESS;
+}
+
+void libera(t_nodos **nodos, t_conexoes **conexoes)
+{
+    t_nodos *aux1 = *nodos, *ant1=NULL;
+    t_conexoes *aux2 = *conexoes, *ant2=NULL;
+
+    while(aux1!=NULL)
+    {
+        ant1 = aux1;
+        aux1 = aux1->prox;
+        free(ant1);
+    }
+
+    while(aux2!=NULL)
+    {
+        ant2 = aux2;
+        aux2 = aux2->prox;
+        free(ant2);
+    }
+
+}
+
+void imprime(t_nodos *nodos, t_conexoes *conexoes)
+{
+    t_nodos *aux1 = nodos;
+    t_conexoes *aux2 = conexoes;
+
+    while(aux1!=NULL)
+    {
+        printf("%d -> ", aux1->n);
+        aux1 = aux1->prox;
+    }
+    printf("NULL\n");
+
+    while(aux2!=NULL)
+    {
+        printf("%d,%d -> ", aux2->n1, aux2->n2);
+        aux2 = aux2->prox;
+    }
+    printf("NULL\n");
+}
+
+void inicializa(t_nodos **nodos, t_conexoes **conexoes)
+{
+    int i;
+    for(i=0; i<2; i++)
+        insere_nodo(nodos, i);
+
+    insere_conexao(conexoes, 0, 1);
+
+    return;
+}
+
+void insere_conexao(t_conexoes **conexoes, int x, int y)
+{
+    t_conexoes *aux = *conexoes;
+    t_conexoes *ant = NULL;
+
+    while(aux != NULL)
+    {
+        ant = aux;
+        aux = aux->prox;
+    }
+    aux = malloc(sizeof(t_conexoes));
+    aux->n1 = x;
+    aux->n2 = y;
+    aux->prox = NULL;
+
+    if(ant == NULL)
+        *conexoes = aux;
+    else
+        ant->prox = aux;
+
+    return;
+}
+
+void insere_nodo(t_nodos **nodos, int x)
+{
+    t_nodos *aux = *nodos;
+    t_nodos *ant = NULL;
+
+    while(aux != NULL)
+    {
+        ant = aux;
+        aux = aux->prox;
+    }
+    aux = malloc(sizeof(t_nodos));
+    aux->n = x;
+    aux->prox = NULL;
+
+    if(ant == NULL)
+        *nodos = aux;
+    else
+        ant->prox = aux;
+
+    return;
 }
 
 void grupos_homogeneos(float w[LIN][DIM], float v1[LIN][4], float v2[LIN][2])
