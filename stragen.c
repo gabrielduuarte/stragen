@@ -16,18 +16,56 @@
 void entrada(float b[LIN][DIM]);
 void normaliza_entrada(float b[LIN][DIM], float w[LIN][DIM]);
 float minmax(float b[LIN][DIM], int j, char vez);
+void grupos_homogeneos(float w[LIN][DIM], float v1[LIN][4], float v2[LIN][2]);
 
 /*************/
 
 int main(void)
 {
     float b[LIN][DIM]={}, w[LIN][DIM]={};
+    float v1[LIN][4], v2[LIN][2];
 
     entrada(b);
 
     normaliza_entrada(b, w);
+    /*ate aqui os numeros estao normalizados*/
+    
+    /* Wi = [wi1 ... wiD]; 1<=i<=L
+     * Wi = [X1 Y1 X2 Y2 Ang1 Ang2]
+     * V1 = [[X1 Y1] [X2 Y2]]
+     * V2 = [[Ang1] [Ang2]]
+     * Wi = [V1 V2]
+     * Dividir o vetor W em 2 grupos homogenos v1, v2*/
+    grupos_homogeneos(w, v1, v2);
+
+
 
     return EXIT_SUCCESS;
+}
+
+void grupos_homogeneos(float w[LIN][DIM], float v1[LIN][4], float v2[LIN][2])
+{
+    int i, j;
+
+    for(i=0; i<LIN; i++)
+    {
+        for(j=0; j<DIM; j++)
+        {
+            if(j<4)
+            {
+                v1[i][j] = w[i][j];
+                if(DEBUG) printf("v1[%d][%d]: %.3f\n", i, j, v1[i][j]);
+            }
+            else
+            {
+                v2[i][j] = w[i][j];
+                if(DEBUG) printf("v2[%d][%d]: %.3f\n", i, j, v2[i][j]);
+            }
+
+        }
+    }
+    return;
+
 }
 
 void normaliza_entrada(float b[LIN][DIM], float w[LIN][DIM])
@@ -51,7 +89,7 @@ void normaliza_entrada(float b[LIN][DIM], float w[LIN][DIM])
         for(i=0; i<LIN; i++)
         {
             for(j=0; j<DIM; j++) 
-                printf("w[%d][%d]: %.2f\n", i, j, w[i][j]);
+                printf("w[%d][%d]: %.3f\n", i, j, w[i][j]);
             printf("\n");
         }
     }
