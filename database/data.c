@@ -47,7 +47,7 @@ int main(void)
             y2 = x1*sin((ang2*M_PI)/180) + y1+y1*cos((ang2*M_PI)/180);
             circlefill(bmp, (MAXX/2)+x2*CONST, (MAXY/2)+y2*CONST, 5, CORBRANCO);
             circle(bmp, (MAXX/2)+x2*CONST, (MAXY/2)+y2*CONST, 5, CORAZUL);
-            printf("x1: %.3f | y1: %.3f | x2: %.3f | y2: %.3f | ang1:%d | ang2:%d\n", x1, y1, x2, y2, ang1, ang2);
+            printf("%.3f %.3f %.3f %.3f %d %d\n", x1, y1, x2, y2, ang1, ang2);
         }
     }
 
