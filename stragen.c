@@ -1,15 +1,17 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include<math.h>
+#include<time.h>
 
 /* Para compilar:
  *  gcc stragen.c -o stragen.x -Wall -Wextra -g -O0 -DDEBUG=1 */
 
 #define LIN 600
 #define DIM 6
+#define Q 10
 
 #ifndef DEBUG
-    #define DEBUG 0
+#define DEBUG 0
 #endif
 
 typedef struct c_nodos
@@ -34,6 +36,7 @@ void insere_conexao(t_conexoes **conexoes, int x, int y);
 void insere_nodo(t_nodos **nodos, int x);
 void imprime(t_nodos *nodos, t_conexoes *conexoes);
 void libera(t_nodos **nodos, t_conexoes **conexoes);
+int balbuciamento_motor(int p, float w[LIN][DIM], int a[LIN], int t);
 
 /*************/
 
@@ -41,17 +44,19 @@ int main(void)
 {
     float b[LIN][DIM]={}, w[LIN][DIM]={};
     float v1[LIN][4], v2[LIN][2];
+    int t=0;
+    int i, a[LIN], p;
     t_nodos *nodos = NULL;
     t_conexoes *conexoes = NULL;
-
+    srand(time(NULL));
 
     entrada(b);
 
     normaliza_entrada(b, w);
-    
+
     inicializa(&nodos, &conexoes);
     /* ate aqui os numeros estao normalizados*/
-    
+
     /* Wi = [wi1 ... wiD]; 1<=i<=L
      * Wi = [X1 Y1 X2 Y2 Ang1 Ang2]
      * V1 = [[X1 Y1] [X2 Y2]]
@@ -63,11 +68,69 @@ int main(void)
     /* Selecionar o criterio de vizinhanca:
      * - Distancia euclidiana entre as posicoes Vn = v1 
      */
+
+    for(i=0; i<LIN; i++)
+        a[i] = 1;
+
+    /*treinamento da rede*/
+    while(t < LIN)
+    {
+        /*p == padrao; a == vetor utilizado para saber se o padrao ja foi utilizado, se ja recebe 0*/
+        p = balbuciamento_motor(p, w, a, t); /* p == padrao, a == vetor utilizado para saber se o padrao*/
+
+        t++;
+    }
+
     if(DEBUG) imprime(nodos, conexoes);
     libera(&nodos, &conexoes);
 
-
     return EXIT_SUCCESS;
+}
+
+int balbuciamento_motor(int p, float w[LIN][DIM], int a[LIN], int t)
+{
+    int i, j;
+    int aux, fi[Q];
+    float d, min;
+
+    if(t == 0)
+        aux = rand()%LIN;
+    else
+    {
+        for(i=0; i<Q; i++)
+        {
+            fi[i] = rand()%LIN;
+            if(DEBUG) printf("f1[%d]:%d\n", i, fi[i]);
+            while(a[fi[i]] == 0)
+                fi[i] = rand()%LIN;
+
+            if(DEBUG) printf("f2[%d]:%d\n", i, fi[i]);
+        }
+        for(i=0; i<Q; i++)
+        {
+            d = 0;
+            for(j=0; j<DIM; j++)
+            {
+                if(DEBUG) printf("w[%d][%d]:%f - w[%d][%d]:%f\n", p, j, w[p][j], fi[i], j, w[fi[i]][j]);
+                d += pow(w[p][j] - w[fi[i]][j], 2);
+            }
+            d = sqrt(d);
+            if(DEBUG) printf("d[%d]:%f\n", t, d);
+            if(i==0)
+            {
+                min = d;
+                aux = fi[i];
+            }
+            if(d < min)
+            {
+                min = d;
+                aux = fi[i];
+            }
+        }
+    }
+    a[aux] = 0; /*colocar que o indice aux ja foi utilizado*/
+
+    return aux;
 }
 
 void libera(t_nodos **nodos, t_conexoes **conexoes)
@@ -114,9 +177,9 @@ void imprime(t_nodos *nodos, t_conexoes *conexoes)
 void inicializa(t_nodos **nodos, t_conexoes **conexoes)
 {
     int i, j;
-    
-    i = rand()%600;
-    j = rand()%600;
+
+    i = rand()%LIN;
+    j = rand()%LIN;
 
     insere_nodo(nodos, i);
     insere_nodo(nodos, j);
@@ -235,7 +298,7 @@ float minmax(float b[LIN][DIM], int j, char vez)
     {
         if(vez == 'm' && b[i][j] < minimax)
             minimax = b[i][j];
-        
+
         if(vez == 'M' && b[i][j] > minimax)
             minimax = b[i][j];
     }
