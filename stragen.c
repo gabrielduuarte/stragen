@@ -40,6 +40,7 @@ void libera(t_nodos **nodos, t_conexoes **conexoes);
 int balbuciamento_motor(int p, float w[LIN][DIM], int a[LIN], int t);
 int vencedor(float w[LIN][DIM], t_nodos *nodos, int p);
 int vice(float w[LIN][DIM], t_nodos *nodos, int p, int s1);
+void verifica_conexao(t_conexoes **conexoes, int s1, int s2);
 
 /*************/
 
@@ -86,14 +87,30 @@ int main(void)
         venc[s1]+=1;
         s2 = vice(w, nodos, p, s1);
         if(DEBUG) printf("p:%d, s1:%d, vez:%d, s2:%d\n", p, s1, venc[s1], s2);
+        verifica_conexao(&conexoes, s1, s2);
 
         t++;
     }
 
-    if(DEBUG) imprime(nodos, conexoes);
+    imprime(nodos, conexoes);
     libera(&nodos, &conexoes);
 
     return EXIT_SUCCESS;
+}
+
+void verifica_conexao(t_conexoes **conexoes, int s1, int s2)
+{
+    t_conexoes *aux = *conexoes;
+
+    while(aux != NULL)
+    {
+        if((aux->n1 == s1 && aux->n2 == s2) || (aux->n1 == s2 && aux->n2 == s1))
+            return;
+        aux = aux->prox;
+    }
+    insere_conexao(conexoes, s1, s2);
+    
+    return;
 }
 
 int vice(float w[LIN][DIM], t_nodos *nodos, int p, int s1)
