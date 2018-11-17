@@ -17,6 +17,7 @@
 typedef struct c_nodos
 {
     int n;
+    int v;
     struct c_nodos *prox;
 } t_nodos;
 
@@ -37,6 +38,8 @@ void insere_nodo(t_nodos **nodos, int x);
 void imprime(t_nodos *nodos, t_conexoes *conexoes);
 void libera(t_nodos **nodos, t_conexoes **conexoes);
 int balbuciamento_motor(int p, float w[LIN][DIM], int a[LIN], int t);
+int vencedor(float w[LIN][DIM], t_nodos *nodos, int p);
+int vice(float w[LIN][DIM], t_nodos *nodos, int p, int s1);
 
 /*************/
 
@@ -45,7 +48,8 @@ int main(void)
     float b[LIN][DIM]={}, w[LIN][DIM]={};
     float v1[LIN][4], v2[LIN][2];
     int t=0;
-    int i, a[LIN], p;
+    int i, a[LIN], p, venc[LIN]={};
+    int s1, s2;
     t_nodos *nodos = NULL;
     t_conexoes *conexoes = NULL;
     srand(time(NULL));
@@ -78,6 +82,11 @@ int main(void)
         /*p == padrao; a == vetor utilizado para saber se o padrao ja foi utilizado, se ja recebe 0*/
         p = balbuciamento_motor(p, w, a, t); /* p == padrao, a == vetor utilizado para saber se o padrao*/
 
+        s1 = vencedor(w, nodos, p);
+        venc[s1]+=1;
+        s2 = vice(w, nodos, p, s1);
+        if(DEBUG) printf("p:%d, s1:%d, vez:%d, s2:%d\n", p, s1, venc[s1], s2);
+
         t++;
     }
 
@@ -85,6 +94,59 @@ int main(void)
     libera(&nodos, &conexoes);
 
     return EXIT_SUCCESS;
+}
+
+int vice(float w[LIN][DIM], t_nodos *nodos, int p, int s1)
+{
+    int j, in;
+    float d, win;
+    t_nodos *aux = nodos;
+
+    win = 100000;
+    while(aux != NULL)
+    {
+        if(aux->n == s1)
+        {
+            aux = aux->prox;
+            continue;
+        }
+        d=0;
+        for(j=0; j<4; j++)
+            d += pow(w[p][j] - w[aux->n][j], 2);
+        d = sqrt(d);
+        if(d <= win)
+        {
+            win = d;
+            in = aux->n;
+        }
+        aux = aux->prox;
+    }
+
+    return in;
+}
+
+int vencedor(float w[LIN][DIM], t_nodos *nodos, int p)
+{
+    int j, in;
+    float d, win;
+    t_nodos *aux = nodos;
+
+    win = 100000;
+    while(aux != NULL)
+    {
+        d = 0;
+        for(j=0; j<4; j++)
+            d += pow(w[p][j] - w[aux->n][j], 2);
+        d = sqrt(d);
+        if(d < win)
+        {
+            win = d;
+            in = aux->n;
+        }
+        aux = aux->prox;
+    }
+
+    return in;
 }
 
 int balbuciamento_motor(int p, float w[LIN][DIM], int a[LIN], int t)
@@ -224,6 +286,7 @@ void insere_nodo(t_nodos **nodos, int x)
     }
     aux = malloc(sizeof(t_nodos));
     aux->n = x;
+    aux->v = 0;
     aux->prox = NULL;
 
     if(ant == NULL)
