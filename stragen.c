@@ -9,6 +9,7 @@
 #define LIN 600
 #define DIM 6
 #define Q 10
+#define P 0.01
 
 #ifndef DEBUG
 #define DEBUG 0
@@ -41,6 +42,8 @@ int balbuciamento_motor(int p, float w[LIN][DIM], int a[LIN], int t);
 int vencedor(float w[LIN][DIM], t_nodos *nodos, int p);
 int vice(float w[LIN][DIM], t_nodos *nodos, int p, int s1);
 void verifica_conexao(t_conexoes **conexoes, int s1, int s2);
+void criterio_atividade(float a[2], float v1[LIN][4]);
+void verifica_atividade(float ai[2], float v1[LIN][4], int p, int s1);
 
 /*************/
 
@@ -48,8 +51,9 @@ int main(void)
 {
     float b[LIN][DIM]={}, w[LIN][DIM]={};
     float v1[LIN][4], v2[LIN][2];
+    float a[2]={}, ai[2]={};
     int t=0;
-    int i, a[LIN], p, venc[LIN]={};
+    int i, vp[LIN], p, venc[LIN]={};
     int s1, s2;
     t_nodos *nodos = NULL;
     t_conexoes *conexoes = NULL;
@@ -74,20 +78,35 @@ int main(void)
      * - Distancia euclidiana entre as posicoes Vn = v1 
      */
 
+    /* Criterio de atividade Vs = v1
+     * limiar de atividade: a[2]
+     * percentual para atividade P = 1%*/
+    criterio_atividade(a, v1);
+    for(i=0; i<2; i++)
+        printf("a[%d]:%f\n", i, a[i]);
+
+
+
     for(i=0; i<LIN; i++)
-        a[i] = 1;
+        vp[i] = 1;
 
     /*treinamento da rede*/
     while(t < LIN)
     {
         /*p == padrao; a == vetor utilizado para saber se o padrao ja foi utilizado, se ja recebe 0*/
-        p = balbuciamento_motor(p, w, a, t); /* p == padrao, a == vetor utilizado para saber se o padrao*/
+        p = balbuciamento_motor(p, w, vp, t); /* p == padrao, vp == vetor utilizado para saber se o padrao*/
 
         s1 = vencedor(w, nodos, p);
         venc[s1]+=1;
         s2 = vice(w, nodos, p, s1);
-        if(DEBUG) printf("p:%d, s1:%d, vez:%d, s2:%d\n", p, s1, venc[s1], s2);
+        printf("p:%d, s1:%d, vez:%d, s2:%d\n", p, s1, venc[s1], s2);
+        if(t==10)
+            break;
         verifica_conexao(&conexoes, s1, s2);
+        verifica_atividade(ai, v1, p, s1);
+        /* for(i=0; i<2; i++) */
+        /*     if(ai[i] < a[i]) */
+        /*         insere_nodo(); */
 
         t++;
     }
@@ -96,6 +115,72 @@ int main(void)
     libera(&nodos, &conexoes);
 
     return EXIT_SUCCESS;
+}
+
+void verifica_atividade(float ai[2], float v1[LIN][4], int p, int s1)
+{
+    int i, j;
+    float d;
+
+    for(i=0; i<2; i++)
+    {
+        d=0;
+        ai[i]=0;
+        if(i==0)
+        {
+            for(j=0; j<2; j++)
+                d += pow(v1[p][j] - v1[s1][j], 2);
+            d = sqrt(d);
+        }
+        else
+        {
+            for(j=2; j<4; j++)
+                d += pow(v1[p][j] - v1[s1][j], 2);
+            d = sqrt(d);
+        }
+        ai[i] = exp(-d);
+        if(DEBUG) printf("ai[%d]:%f\n", i, ai[i]);
+    }
+
+    return;
+}
+
+void criterio_atividade(float a[2], float v1[LIN][4])
+{
+    int i, j, z;
+    float d, max;
+
+    for(i=0; i<2; i++)
+    {
+        for(j=0; j<LIN; j++)
+        {
+            d=0;
+            if(i==0)
+            {
+                for(z=0; z<2; z++)
+                    d += pow(v1[j][z], 2);
+                d = sqrt(d);
+                if(j==0)
+                    max = d;
+                if(d > max)
+                    max = d;
+            }
+            else
+            {
+                for(z=2; z<4; z++)
+                    d += pow(v1[j][z], 2);
+                d = sqrt(d);
+                if(j==0)
+                    max = d;
+                if(d > max)
+                    max = d;
+            }
+        }
+        a[i] = exp(P*max);
+        if(DEBUG)printf("a[%d]:%f\n", i, a[i]);
+    }
+
+    return;
 }
 
 void verifica_conexao(t_conexoes **conexoes, int s1, int s2)
@@ -109,7 +194,7 @@ void verifica_conexao(t_conexoes **conexoes, int s1, int s2)
         aux = aux->prox;
     }
     insere_conexao(conexoes, s1, s2);
-    
+
     return;
 }
 
@@ -258,7 +343,7 @@ void inicializa(t_nodos **nodos, t_conexoes **conexoes)
     int i, j;
 
     i = rand()%LIN;
-    j = rand()%LIN;
+    while((j = rand()%LIN) == i);
 
     insere_nodo(nodos, i);
     insere_nodo(nodos, j);
