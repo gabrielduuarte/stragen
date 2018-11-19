@@ -194,8 +194,12 @@ int main(void)
         remover_conexao(&new_conect, s1, s2);
     }
 
+    /*Passo 3: Repetir para as conexoes remanescentes no novo conj de nodos:
+     * Verificar se ao eliminar a conexao ij o grafo fica desconectado
+     * Se o grafo nao ficar desconectado, retire a conexao ij do conjunto principal*/
 
-    /*Passo 3: ainda estou trabalhando aqui ~nao reparem na bagunça~*/
+
+    /*Passo 4: ainda estou trabalhando aqui ~nao reparem na bagunça~*/
     t_nodos *aux1 = nodos;
     t_nodos *aux2 = new_nodos;
     while(aux1 != NULL)
